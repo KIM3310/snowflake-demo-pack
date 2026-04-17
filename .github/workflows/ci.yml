@@ -1,0 +1,87 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lint-sql:
+    name: SQL lint (sqlfluff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install sqlfluff
+        run: pip install "sqlfluff>=3.0.0"
+      - name: Lint SQL (common + demos)
+        run: |
+          sqlfluff lint common/ demos/ \
+            --dialect snowflake \
+            --ignore parsing,templating \
+            || true
+      - name: Strict parse check (informational)
+        run: sqlfluff parse common/setup.sql --dialect snowflake || true
+
+  syntax-check-python:
+    name: Python syntax + lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install ruff
+        run: pip install "ruff>=0.3.0" "black>=24.0.0"
+      - name: Compile-check Python modules
+        run: |
+          find common demos -type f -name "*.py" -print0 \
+            | xargs -0 -n1 python -m py_compile
+      - name: ruff check (informational)
+        run: ruff check common/ demos/ || true
+      - name: black --check (informational)
+        run: black --check common/ demos/ || true
+
+  dry-run-demos:
+    name: Dry-run each demo
+    runs-on: ubuntu-latest
+    needs: [lint-sql, syntax-check-python]
+    env:
+      SNOWFLAKE_DEMO_DRY_RUN: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install minimal deps for dry-run
+        run: pip install pandas numpy faker pydantic python-dotenv
+      - name: Dry-run finance
+        run: |
+          python demos/01-finance-fraud-detection/02-load-data.py
+          python demos/01-finance-fraud-detection/03-fraud-model.py
+      - name: Dry-run retail
+        run: |
+          python demos/02-retail-customer-360/02-load-data.py
+          python demos/02-retail-customer-360/03-fraud-model.py
+      - name: Dry-run manufacturing
+        run: |
+          python demos/03-manufacturing-predictive-maintenance/02-load-data.py
+          python demos/03-manufacturing-predictive-maintenance/03-fraud-model.py
+      - name: Dry-run healthcare
+        run: |
+          python demos/04-healthcare-ehr-governed-analytics/02-load-data.py
+          python demos/04-healthcare-ehr-governed-analytics/03-fraud-model.py
+      - name: Dry-run media
+        run: |
+          python demos/05-media-content-recommendation/02-load-data.py
+          python demos/05-media-content-recommendation/03-fraud-model.py
