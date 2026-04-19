@@ -64,7 +64,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: Install minimal deps for dry-run
-        run: pip install pandas numpy faker pydantic python-dotenv
+        run: pip install pandas numpy faker pydantic python-dotenv scikit-learn
       - name: Dry-run finance
         run: |
           python demos/01-finance-fraud-detection/02-load-data.py
