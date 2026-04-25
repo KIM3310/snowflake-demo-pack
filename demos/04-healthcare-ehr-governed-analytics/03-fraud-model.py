@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -129,10 +130,8 @@ def _live_report(session: Any) -> list[dict[str, Any]]:
                 }
             )
     # Return to SYSADMIN before exiting
-    try:
+    with suppress(Exception):
         session.sql("USE ROLE SYSADMIN").collect()
-    except Exception:  # noqa: BLE001
-        pass
     return report
 
 

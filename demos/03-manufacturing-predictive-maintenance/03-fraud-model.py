@@ -81,13 +81,13 @@ def _train_model() -> Any:
         raise RuntimeError("scikit-learn is required. Run `make setup`.") from exc
 
     features = _build_training_features()
-    X = features[FEATURE_COLUMNS].fillna(0.0).to_numpy(dtype=float)
+    feature_matrix = features[FEATURE_COLUMNS].fillna(0.0).to_numpy(dtype=float)
     model = IsolationForest(
         n_estimators=80,
         contamination=0.07,
         random_state=2026,
     )
-    model.fit(X)
+    model.fit(feature_matrix)
     LOG.info("Trained IsolationForest on %s machines.", len(features))
     return model
 
@@ -125,6 +125,7 @@ def _register_udf(session: Any, model_bytes: bytes) -> None:
     ) -> float:
         import pickle as _pickle
         import sys as _sys
+
         import numpy as _np
 
         stage_dir = _sys.path[0]

@@ -15,7 +15,7 @@ import logging
 import os
 import random
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -48,10 +48,10 @@ def _build_machines(telemetry: pd.DataFrame) -> pd.DataFrame:
     rnd = random.Random(512)
     rows["MODEL_CODE"] = rows["LINE_ID"].apply(lambda line: f"MDL-{rnd.randint(100, 999)}")
     rows["COMMISSIONED_AT"] = rows["MACHINE_ID"].apply(
-        lambda _: (datetime.now(timezone.utc).date() - timedelta(days=rnd.randint(180, 3 * 365)))
+        lambda _: (datetime.now(UTC).date() - timedelta(days=rnd.randint(180, 3 * 365)))
     )
     rows["LAST_PM_AT"] = rows["MACHINE_ID"].apply(
-        lambda _: (datetime.now(timezone.utc).date() - timedelta(days=rnd.randint(7, 120)))
+        lambda _: (datetime.now(UTC).date() - timedelta(days=rnd.randint(7, 120)))
     )
     return rows
 
@@ -66,7 +66,7 @@ def _build_failure_history(machines: pd.DataFrame, degrade_machines: int) -> pd.
             rows.append(
                 {
                     "MACHINE_ID": m["MACHINE_ID"],
-                    "FAILURE_AT": datetime.now(timezone.utc) - timedelta(days=rnd.randint(30, 365)),
+                    "FAILURE_AT": datetime.now(UTC) - timedelta(days=rnd.randint(30, 365)),
                     "FAILURE_MODE": rnd.choice(FAILURE_MODES),
                     "DOWNTIME_MINUTES": round(rnd.uniform(30, 360), 1),
                     "REPAIR_COST_USD": round(rnd.uniform(800, 24_000), 2),

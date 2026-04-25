@@ -64,9 +64,9 @@ def _build_training_frame():  # noqa: ANN202 - returns pandas lazily
     df["CARD_DISTINCT_COUNTRIES_24H"] = np.random.default_rng(1).integers(1, 4, size=len(df))
     df["CUSTOMER_AMOUNT_AVG_30D"] = df["AMOUNT_USD"].mean()
     df["CUSTOMER_AMOUNT_STDDEV_30D"] = df["AMOUNT_USD"].std()
-    X = df[FEATURE_COLUMNS].to_numpy(dtype=float)
+    features_matrix = df[FEATURE_COLUMNS].to_numpy(dtype=float)
     y = df["LABEL"].astype(int).to_numpy()
-    return X, y
+    return features_matrix, y
 
 
 def _train_model() -> Any:
@@ -78,7 +78,7 @@ def _train_model() -> Any:
             "scikit-learn is required for model training. Install via `make setup`."
         ) from exc
 
-    X, y = _build_training_frame()
+    features_matrix, y = _build_training_frame()
     if y.sum() == 0:
         LOG.warning("No positive training examples generated; boosting one synthetic positive.")
         y[0] = 1
@@ -88,8 +88,11 @@ def _train_model() -> Any:
         learning_rate=0.1,
         random_state=2026,
     )
-    model.fit(X, y)
-    LOG.info("Trained GradientBoostingClassifier: train_score=%.4f", model.score(X, y))
+    model.fit(features_matrix, y)
+    LOG.info(
+        "Trained GradientBoostingClassifier: train_score=%.4f",
+        model.score(features_matrix, y),
+    )
     return model
 
 
@@ -152,6 +155,7 @@ def _register_udf(session: Any, model_bytes: bytes) -> None:
     ) -> float:
         import pickle as _pickle
         import sys as _sys
+
         import numpy as _np
 
         stage_dir = _sys.path[0]

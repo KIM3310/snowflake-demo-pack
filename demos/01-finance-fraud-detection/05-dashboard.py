@@ -111,7 +111,7 @@ def _render() -> None:
     st.markdown("---")
 
     # ---- Score distribution --------------------------------------------
-    st.subheader("Score distribution, last {} hours".format(hours_back))
+    st.subheader(f"Score distribution, last {hours_back} hours")
     try:
         dist_df = session.sql(
             f"""

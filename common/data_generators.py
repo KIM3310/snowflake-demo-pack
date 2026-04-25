@@ -23,7 +23,7 @@ import logging
 import math
 import random
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -87,7 +87,7 @@ def generate_finance_transactions(
     Schema matches `demos/01-finance-fraud-detection/01-setup.sql::TRANSACTIONS_RAW`.
     """
     rnd, rng = _rng(seed)
-    now = datetime.now(timezone.utc).replace(microsecond=0)
+    now = datetime.now(UTC).replace(microsecond=0)
 
     customer_ids = [_stable_id("CUST", i) for i in range(n_customers)]
     card_ids = [_stable_id("CARD", i, i % 4) for i in range(n_customers * 2)]
@@ -159,7 +159,7 @@ def generate_retail_events(
     Schema matches `demos/02-retail-customer-360/01-setup.sql::CUSTOMER_EVENTS`.
     """
     rnd, rng = _rng(seed)
-    now = datetime.now(timezone.utc).replace(microsecond=0)
+    now = datetime.now(UTC).replace(microsecond=0)
     customer_ids = [_stable_id("RCUST", i) for i in range(n_customers)]
 
     rows: list[dict[str, Any]] = []
@@ -208,7 +208,7 @@ def generate_retail_customers(n_customers: int = 2_500, seed: int = 44) -> pd.Da
             {
                 "CUSTOMER_ID": cust,
                 "EMAIL_HASH": hashlib.sha256(cust.encode()).hexdigest()[:24],
-                "SIGNUP_DATE": (datetime.now(timezone.utc) - timedelta(days=signup_days_ago)).date(),
+                "SIGNUP_DATE": (datetime.now(UTC) - timedelta(days=signup_days_ago)).date(),
                 "LIFETIME_VALUE_USD": float(round(rng.gamma(shape=2.0, scale=180.0), 2)),
                 "SEGMENT": rnd.choices(segments, weights=[5, 20, 45, 20, 10])[0],
                 "PREFERRED_CHANNEL": rnd.choice(RETAIL_CHANNELS),
@@ -256,7 +256,7 @@ def generate_manufacturing_telemetry(
     Schema matches `demos/03-manufacturing-predictive-maintenance/01-setup.sql::SENSOR_TELEMETRY`.
     """
     rnd, rng = _rng(seed)
-    now = datetime.now(timezone.utc).replace(microsecond=0, second=0)
+    now = datetime.now(UTC).replace(microsecond=0, second=0)
     start = now - timedelta(hours=hours)
 
     degrading = set(rnd.sample(range(n_machines), k=min(degrade_machines, n_machines)))
@@ -325,7 +325,7 @@ def generate_healthcare_records(n_rows: int = 5_000, seed: int = 46) -> pd.DataF
     hashed patient pseudonym.
     """
     rnd, rng = _rng(seed)
-    now = datetime.now(timezone.utc).replace(microsecond=0)
+    now = datetime.now(UTC).replace(microsecond=0)
     patient_ids = [_stable_id("PAT", i) for i in range(n_rows // 3 + 1)]
 
     rows: list[dict[str, Any]] = []
@@ -393,7 +393,7 @@ def generate_media_events(
     Schema matches `demos/05-media-content-recommendation/01-setup.sql::USER_EVENTS`.
     """
     rnd, rng = _rng(seed)
-    now = datetime.now(timezone.utc).replace(microsecond=0)
+    now = datetime.now(UTC).replace(microsecond=0)
     users = [_stable_id("USR", i) for i in range(n_users)]
     content = [_stable_id("CNT", i) for i in range(n_content)]
 
