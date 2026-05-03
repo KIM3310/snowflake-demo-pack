@@ -180,3 +180,11 @@ This repo is part of a broader pre-sales toolkit by the author. Each sibling rep
 ## License
 
 MIT. See [LICENSE](LICENSE). Copyright 2026 Doeon Kim.
+
+## Cloud + AI Architecture
+
+This repository includes a neutral cloud and AI engineering blueprint that maps the current proof surface to runtime boundaries, data contracts, model-risk controls, deployment posture, and validation hooks.
+
+- [Cloud + AI architecture blueprint](docs/cloud-ai-architecture.md)
+- [Machine-readable architecture manifest](architecture/blueprint.json)
+- Validation command: `python3 scripts/validate_architecture_blueprint.py`
